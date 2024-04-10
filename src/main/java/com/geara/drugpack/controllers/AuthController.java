@@ -4,6 +4,7 @@ import com.geara.drugpack.dao.UserDao;
 import com.geara.drugpack.dto.AuthenticationRequest;
 import com.geara.drugpack.securityconfig.JwtUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("auth")
+@Tag(name = "Authorization", description = "Methods used for authorization, registration and restoring account")
 public class AuthController {
 
   private final AuthenticationManager authenticationManager;
