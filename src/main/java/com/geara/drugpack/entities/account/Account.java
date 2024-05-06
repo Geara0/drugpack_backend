@@ -1,5 +1,6 @@
 package com.geara.drugpack.entities.account;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.geara.drugpack.entities.condition.Condition;
 import com.geara.drugpack.entities.drug.Drug;
@@ -14,6 +15,7 @@ import java.util.Set;
 @ToString
 @Getter
 @Setter
+@JsonIgnoreProperties({"new"})
 public class Account extends AbstractPersistable<Long> {
   @Schema(description = "Account's email")
   private String email;
