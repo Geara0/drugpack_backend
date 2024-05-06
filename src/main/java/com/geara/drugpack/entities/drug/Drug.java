@@ -3,6 +3,7 @@ package com.geara.drugpack.entities.drug;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.geara.drugpack.entities.account.Account;
+import com.geara.drugpack.utils.Searchable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import java.util.Set;
 
@@ -20,8 +20,8 @@ import java.util.Set;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties({"new", "auroraPackingId", "auroraDescriptionId", "metaphone"})
-public class Drug extends AbstractPersistable<Long> {
+@JsonIgnoreProperties({"new", "auroraPackingId", "auroraDescriptionId", "accounts"})
+public class Drug extends Searchable<Long> {
   @Column(nullable = false)
   @Schema(description = "Packing id in aurora db", hidden = true)
   private String auroraPackingId;
@@ -46,10 +46,6 @@ public class Drug extends AbstractPersistable<Long> {
   @Schema(description = "Accounts with this drug")
   @ManyToMany(mappedBy = "drugs")
   private Set<Account> accounts;
-
-  @Column(nullable = false)
-  @Schema(hidden = true)
-  private String metaphone;
 
   public Drug() {}
 }

@@ -3,13 +3,13 @@ package com.geara.drugpack.entities.condition;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.geara.drugpack.entities.account.Account;
+import com.geara.drugpack.utils.Searchable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import java.util.Set;
 
@@ -18,8 +18,8 @@ import java.util.Set;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties({"new"})
-public class Condition extends AbstractPersistable<Long> {
+@JsonIgnoreProperties({"new", "accounts"})
+public class Condition extends Searchable<Long> {
 
   @Column(nullable = false)
   @Schema(description = "Name of the condition")
