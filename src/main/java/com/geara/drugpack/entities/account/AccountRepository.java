@@ -1,4 +1,4 @@
-package com.geara.drugpack.account;
+package com.geara.drugpack.entities.account;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

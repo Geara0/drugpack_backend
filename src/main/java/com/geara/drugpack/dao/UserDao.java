@@ -1,7 +1,7 @@
 package com.geara.drugpack.dao;
 
-import com.geara.drugpack.account.AccountController;
-import com.geara.drugpack.account.AccountRepository;
+import com.geara.drugpack.entities.account.AccountController;
+import com.geara.drugpack.entities.account.AccountRepository;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
