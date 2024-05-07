@@ -22,9 +22,9 @@ import java.util.Set;
 @AllArgsConstructor
 @JsonIgnoreProperties({"new", "auroraPackingId", "auroraDescriptionId", "accounts"})
 public class Drug extends Searchable<Long> {
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   @Schema(description = "Packing id in aurora db", hidden = true)
-  private String auroraPackingId;
+  private long auroraPackingId;
 
   @Column(nullable = false)
   @Schema(description = "Name of the drug")
@@ -38,7 +38,7 @@ public class Drug extends Searchable<Long> {
 
   @Column(nullable = false)
   @Schema(description = "Description id in aurora db", hidden = true)
-  private String auroraDescriptionId;
+  private long auroraDescriptionId;
 
   @JsonBackReference
   @ToString.Exclude
