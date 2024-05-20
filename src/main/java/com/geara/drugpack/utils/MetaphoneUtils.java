@@ -44,10 +44,8 @@ public class MetaphoneUtils {
       final var left = S.substring(0, S.length() - 6);
       final var right =
           switch (S.substring(S.length() - 6)) {
-            case "ОВСКИЙ" -> "@";
-            case "ЕВСКИЙ" -> "#";
-            case "ОВСКАЯ" -> "$";
-            case "ЕВСКАЯ" -> "%";
+            case "ОВСКИЙ", "ОВСКАЯ" -> "!";
+            case "ЕВСКИЙ", "ЕВСКАЯ" -> "@";
             default -> S.substring(S.length() - 6);
           };
 
@@ -73,6 +71,10 @@ public class MetaphoneUtils {
             case "ИНА" -> "1";
             case "ИЕВ", "ЕЕВ" -> "4";
             case "НКО" -> "3";
+            case "АТЬ", "ЯТЬ", "ОТЬ", "ЕТЬ", "УТЬ" -> "#";
+            case "ЕШЬ", "ИШЬ", "ЕТЕ", "ИТЕ" -> "$";
+            case "АЛА", "ЯЛА", "АЛИ", "ЯЛИ", "УЛА", "УЛИ" -> "%";
+            case "ОЛА", "ЕЛА", "ОЛИ", "ЕЛИ" -> "^";
 
             default -> S.substring(S.length() - 3);
           };
@@ -84,13 +86,16 @@ public class MetaphoneUtils {
       final var left = S.substring(0, S.length() - 2);
       final var right =
           switch (S.substring(S.length() - 2)) {
-            case "ОВ", "ЕВ" -> "4";
-            case "АЯ" -> "6";
-            case "ИЙ", "ЫЙ" -> "7";
+            case "ОВ", "ЕВ", "ОЕ", "ЕЕ", "ОЙ" -> "4";
+            case "АЯ", "ЯЯ" -> "6";
+            case "ИЙ", "ЫЙ", "ИЯ" -> "7";
             case "ЫХ", "ИХ" -> "5";
             case "ИН" -> "8";
             case "ИК", "ЕК" -> "2";
             case "УК", "ЮК" -> "0";
+            case "ЕМ", "ИМ", "ЕТ", "ИТ" -> "$";
+            case "УТ", "ЮТ", "АТ", "ЯТ", "УЛ", "ЮЛ", "АЛ", "ЯЛ" -> "%";
+            case "ОЛ", "ЕЛ" -> "^";
 
             default -> S.substring(S.length() - 2);
           };
@@ -187,10 +192,10 @@ public class MetaphoneUtils {
         + "  IF LENGTH(S) > 6 THEN "
         + "    S := LEFT(S, LENGTH(S) - 6) || "
         + "         CASE RIGHT(S, 6) "
-        + "           WHEN 'ОВСКИЙ' THEN '@' "
-        + "           WHEN 'ЕВСКИЙ' THEN '#' "
-        + "           WHEN 'ОВСКАЯ' THEN '$' "
-        + "           WHEN 'ЕВСКАЯ' THEN '%' "
+        + "           WHEN 'ОВСКИЙ' THEN '!' "
+        + "           WHEN 'ОВСКАЯ' THEN '!' "
+        + "           WHEN 'ЕВСКИЙ' THEN '@' "
+        + "           WHEN 'ЕВСКАЯ' THEN '@' "
         + "           ELSE RIGHT(S, 6) "
         + "         END; "
         + "  END IF; "
@@ -205,30 +210,63 @@ public class MetaphoneUtils {
         + "  IF LENGTH(S) > 3 THEN "
         + "    S := LEFT(S, LENGTH(S) - 3) || "
         + "         CASE RIGHT(S, 3) "
-        + "           WHEN 'ОВА' THEN '9' "
-        + "           WHEN 'ЕВА' THEN '9' "
-        + "           WHEN 'ИНА' THEN '1' "
-        + "           WHEN 'ИЕВ' THEN '4' "
-        + "           WHEN 'ЕЕВ' THEN '4' "
-        + "           WHEN 'НКО' THEN '3' "
+        + "           WHEN 'ОВА' -> '9' "
+        + "           WHEN 'ЕВА' -> '9' "
+        + "           WHEN 'ИНА' -> '1' "
+        + "           WHEN 'ИЕВ' -> '4' "
+        + "           WHEN 'ЕЕВ' -> '4' "
+        + "           WHEN 'НКО' -> '3' "
+        + "           WHEN 'АТЬ' -> '#' "
+        + "           WHEN 'ЯТЬ' -> '#' "
+        + "           WHEN 'ОТЬ' -> '#' "
+        + "           WHEN 'ЕТЬ' -> '#' "
+        + "           WHEN 'УТЬ' -> '#' "
+        + "           WHEN 'ЕШЬ' -> '$' "
+        + "           WHEN 'ИШЬ' -> '$' "
+        + "           WHEN 'ЕТЕ' -> '$' "
+        + "           WHEN 'ИТЕ' -> '$' "
+        + "           WHEN 'АЛА' -> '%' "
+        + "           WHEN 'ЯЛА' -> '%' "
+        + "           WHEN 'АЛИ' -> '%' "
+        + "           WHEN 'ЯЛИ' -> '%' "
+        + "           WHEN 'УЛА' -> '%' "
+        + "           WHEN 'УЛИ' -> '%' "
+        + "           WHEN 'ОЛА' -> '^' "
+        + "           WHEN 'ЕЛА' -> '^' "
+        + "           WHEN 'ОЛИ' -> '^' "
+        + "           WHEN 'ЕЛИ' -> '^' "
         + "           ELSE RIGHT(S, 3) "
         + "         END; "
         + "  END IF; "
         + "  IF LENGTH(S) > 2 THEN "
         + "    S := LEFT(S, LENGTH(S) - 2) || "
         + "         CASE RIGHT(S, 2) "
-        + "           WHEN 'ОВ' THEN '4' "
-        + "           WHEN 'ЕВ' THEN '4' "
-        + "           WHEN 'АЯ' THEN '6' "
-        + "           WHEN 'ИЙ' THEN '7' "
-        + "           WHEN 'ЫЙ' THEN '7' "
-        + "           WHEN 'ЫХ' THEN '5' "
-        + "           WHEN 'ИХ' THEN '5' "
-        + "           WHEN 'ИН' THEN '8' "
-        + "           WHEN 'ИК' THEN '2' "
-        + "           WHEN 'ЕК' THEN '2' "
-        + "           WHEN 'УК' THEN '0' "
-        + "           WHEN 'ЮК' THEN '0' "
+        + "           'АЯ' -> '6' "
+        + "           'ЯЯ' -> '6' "
+        + "           'ИЙ' -> '7' "
+        + "           'ЫЙ' -> '7' "
+        + "           'ИЯ' -> '7' "
+        + "           'ЫХ' -> '5' "
+        + "           'ИХ' -> '5' "
+        + "           'ИН' -> '8' "
+        + "           'ИК' -> '2' "
+        + "           'ЕК' -> '2' "
+        + "           'УК' -> '0' "
+        + "           'ЮК' -> '0' "
+        + "           'ЕМ' -> '$' "
+        + "           'ИМ' -> '$' "
+        + "           'ЕТ' -> '$' "
+        + "           'ИТ' -> '$' "
+        + "           'УТ' -> '%' "
+        + "           'ЮТ' -> '%' "
+        + "           'АТ' -> '%' "
+        + "           'ЯТ' -> '%' "
+        + "           'УЛ' -> '%' "
+        + "           'ЮЛ' -> '%' "
+        + "           'АЛ' -> '%' "
+        + "           'ЯЛ' -> '%' "
+        + "           'ОЛ' -> '^' "
+        + "           'ЕЛ' -> '^' "
         + "           ELSE RIGHT(S, 2) "
         + "         END; "
         + "  END IF; "
