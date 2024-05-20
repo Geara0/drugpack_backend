@@ -5,13 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.geara.drugpack.entities.account.Account;
 import com.geara.drugpack.utils.Searchable;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.Set;
 
@@ -20,25 +15,13 @@ import java.util.Set;
 @Getter
 @Setter
 @AllArgsConstructor
-@JsonIgnoreProperties({"new", "auroraPackingId", "auroraDescriptionId", "accounts"})
+@NoArgsConstructor
+@JsonIgnoreProperties({"new", "accounts", "source"})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"source", "foreignId"}))
 public class Drug extends Searchable<Long> {
   @Column(nullable = false, unique = true)
-  @Schema(description = "Packing id in aurora db", hidden = true)
-  private long auroraPackingId;
-
-  @Column(nullable = false)
-  @Schema(description = "Name of the drug")
-  private String name;
-
-  @Schema(description = "Form of packaging")
-  private String packaging;
-
-  @Schema(description = "Manufacturer")
-  private String firm;
-
-  @Column(nullable = false)
-  @Schema(description = "Description id in aurora db", hidden = true)
-  private long auroraDescriptionId;
+  @Schema(description = "Id in other db schema (like aurora)", hidden = true)
+  private long foreignId;
 
   @JsonBackReference
   @ToString.Exclude
@@ -47,5 +30,7 @@ public class Drug extends Searchable<Long> {
   @ManyToMany(mappedBy = "drugs")
   private Set<Account> accounts;
 
-  public Drug() {}
+  @Column(nullable = false)
+  @Schema(description = "Source of drug (like aurora)")
+  private DrugSource source;
 }

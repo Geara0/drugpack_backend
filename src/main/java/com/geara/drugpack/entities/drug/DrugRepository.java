@@ -1,9 +1,9 @@
 package com.geara.drugpack.entities.drug;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface DrugRepository extends JpaRepository<Drug, Long> {
-  @Override
-  void deleteAllById(@NotNull Iterable<? extends Long> ids);
+  Optional<Drug> findBySourceAndForeignId(DrugSource source, Long foreignId);
 }
