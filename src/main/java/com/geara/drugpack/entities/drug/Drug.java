@@ -18,6 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @JsonIgnoreProperties({"new", "accounts", "source"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"source", "foreignId"}))
+@Schema(description = "Representation of drug in some db (like aurora)")
 public class Drug extends Searchable<Long> {
   @Column(nullable = false, unique = true)
   @Schema(description = "Id in other db schema (like aurora)", hidden = true)

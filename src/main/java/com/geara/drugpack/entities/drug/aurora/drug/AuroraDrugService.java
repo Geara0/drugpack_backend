@@ -3,11 +3,15 @@ package com.geara.drugpack.entities.drug.aurora.drug;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.geara.drugpack.dto.DrugDto;
+import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.aurora.activesubstance.AuroraActiveSubstanceRepository;
 import com.geara.drugpack.entities.drug.aurora.description.AuroraDescriptionRepository;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,5 +51,29 @@ public class AuroraDrugService {
     }
 
     drugRepository.saveAll(drugs);
+  }
+
+  public DrugDto getDto(@NotNull Drug drug) {
+    if (drug == null) throw new RuntimeException();
+
+    final var auroraDrug = drugRepository.findById(drug.getForeignId()).get();
+
+    return new DrugDto(
+        drug.getId(),
+        auroraDrug.getDescription().toString(),
+        auroraDrug.getPrepFull(),
+        auroraDrug.getPrepShort(),
+        auroraDrug.getAmount(),
+        auroraDrug.getPackingFull(),
+        auroraDrug.getPackingShort(),
+        auroraDrug.getBarcode(),
+        auroraDrug.getFirms(),
+        auroraDrug.getActiveSubstance().toString(),
+        auroraDrug.getLifetimeText(),
+        auroraDrug.getLifetimeMonth(),
+        auroraDrug.getScText(),
+        auroraDrug.getScShort(),
+        new byte[0],
+        auroraDrug.getDosageFormFullName());
   }
 }

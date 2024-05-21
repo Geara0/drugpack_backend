@@ -1,5 +1,7 @@
 package com.geara.drugpack.controllers;
 
+import com.geara.drugpack.dto.DrugDto;
+import com.geara.drugpack.dto.DrugDtoMapper;
 import com.geara.drugpack.entities.condition.Condition;
 import com.geara.drugpack.entities.condition.ConditionRepository;
 import com.geara.drugpack.entities.drug.Drug;
@@ -24,22 +26,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("search")
 @Tag(name = "Search", description = "Methods for searching data")
 public class SearchController {
-  @PersistenceContext private EntityManager entityManager;
 
+  @PersistenceContext private final EntityManager entityManager;
+
+  private final DrugDtoMapper drugDtoMapper;
   private final DrugRepository drugRepository;
   private final ConditionRepository conditionRepository;
 
   @PostMapping("drugs")
-  ResponseEntity<List<Drug>> searchDrugs(@RequestBody final String query) {
-    return search(Drug.class, drugRepository, query);
+  ResponseEntity<List<DrugDto>> searchDrugs(@RequestBody final String query) {
+    return ResponseEntity.ok(
+        search(Drug.class, drugRepository, query).stream()
+            .map(drugDtoMapper::drugToDrugDto)
+            .toList());
   }
 
   @PostMapping("conditions")
   ResponseEntity<List<Condition>> searchConditions(@RequestBody final String query) {
-    return search(Condition.class, conditionRepository, query);
+    return ResponseEntity.ok(search(Condition.class, conditionRepository, query));
   }
 
-  <T extends Searchable<Long>> ResponseEntity<List<T>> search(
+  <T extends Searchable<Long>> List<T> search(
       Class<T> classType, JpaRepository<T, Long> repository, String searchTerm) {
     final var select =
         "WITH subquery AS ( "
@@ -61,8 +68,6 @@ public class SearchController {
     final List<Object[]> queryResult = query.getResultList();
     final var foundIds = queryResult.stream().map(e -> (Long) e[1]).collect(Collectors.toSet());
 
-    final var res = repository.findAllById(foundIds);
-
-    return ResponseEntity.ok(res);
+    return repository.findAllById(foundIds);
   }
 }
