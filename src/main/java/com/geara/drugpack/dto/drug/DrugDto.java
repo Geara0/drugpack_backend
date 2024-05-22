@@ -1,5 +1,7 @@
-package com.geara.drugpack.dto;
+package com.geara.drugpack.dto.drug;
 
+import com.geara.drugpack.dto.activesubstance.ActiveSubstanceDto;
+import com.geara.drugpack.dto.description.DescriptionDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -12,9 +14,8 @@ public class DrugDto {
   @Schema(description = "Идентификатор (в таблице drug)")
   private Long id;
 
-  // TODO: json obj
-  @Schema(description = "Полное описание")
-  private String description;
+  @Schema(description = "Описание", nullable = true)
+  private DescriptionDto description;
 
   @Schema(description = "Полное название")
   private String name;
@@ -37,9 +38,8 @@ public class DrugDto {
   @Schema(description = "Название фирмы производителя/упаковщика")
   private String firm;
 
-  // TODO: json obj
-  @Schema(description = "Действующее вещество")
-  private String activeSubstance;
+  @Schema(description = "Действующее вещество", nullable = true)
+  private ActiveSubstanceDto activeSubstance;
 
   @Schema(description = "Срок годности.", nullable = true)
   private String lifetimeText;

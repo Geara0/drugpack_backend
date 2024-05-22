@@ -25,15 +25,7 @@ public class AuroraDescription {
   @JsonProperty(value = "desc_id", access = JsonProperty.Access.WRITE_ONLY)
   private Long descId;
 
-//  @OneToOne
-//  @MapsId
-//  @JoinColumn(name = "desc_id")
-//  @ToString.Exclude
-//  private AuroraDrug drug;
-
   @OneToMany(mappedBy = "description")
-//  @MapsId
-//  @JoinColumn(name = "as_id")
   @ToString.Exclude
   private List<AuroraDrug> drugs;
 

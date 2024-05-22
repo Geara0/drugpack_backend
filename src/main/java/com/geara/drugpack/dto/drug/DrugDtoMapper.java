@@ -1,4 +1,4 @@
-package com.geara.drugpack.dto;
+package com.geara.drugpack.dto.drug;
 
 import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.aurora.drug.AuroraDrugService;
