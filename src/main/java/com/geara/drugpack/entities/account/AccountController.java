@@ -1,8 +1,10 @@
 package com.geara.drugpack.entities.account;
 
-import com.geara.drugpack.entities.condition.Condition;
+import com.geara.drugpack.dto.condition.ConditionDto;
+import com.geara.drugpack.dto.condition.ConditionDtoMapper;
+import com.geara.drugpack.dto.drug.DrugDto;
+import com.geara.drugpack.dto.drug.DrugDtoMapper;
 import com.geara.drugpack.entities.condition.ConditionRepository;
-import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.DrugRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -30,6 +32,8 @@ public class AccountController {
   private final AccountRepository repository;
   private final DrugRepository drugRepository;
   private final ConditionRepository conditionRepository;
+  private final DrugDtoMapper drugDtoMapper;
+  private final ConditionDtoMapper conditionDtoMapper;
 
   public Account newAccount(String email, String password) {
     final var account = new Account(email, password);
@@ -41,7 +45,7 @@ public class AccountController {
   @ApiResponse(
       responseCode = "200",
       description = "Returns conditions",
-      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Condition.class))))
+      content = @Content(array = @ArraySchema(schema = @Schema(implementation = ConditionDto.class))))
   @ApiResponse(
       responseCode = "400",
       description = "Returns error message",
@@ -54,14 +58,15 @@ public class AccountController {
       return ResponseEntity.badRequest().body("No such account found");
     }
 
-    return ResponseEntity.ok(account.getConditions().toArray());
+    return ResponseEntity.ok(
+        account.getConditions().stream().map(conditionDtoMapper::conditionToConditionDto).toList());
   }
 
   @Operation(summary = "Get account drugs")
   @ApiResponse(
       responseCode = "200",
       description = "Returns drugs",
-      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Drug.class))))
+      content = @Content(array = @ArraySchema(schema = @Schema(implementation = DrugDto.class))))
   @ApiResponse(
       responseCode = "400",
       description = "Returns error message",
@@ -74,7 +79,8 @@ public class AccountController {
       return ResponseEntity.badRequest().body("No such account found");
     }
 
-    return ResponseEntity.ok(account.getDrugs());
+    return ResponseEntity.ok(
+        account.getDrugs().stream().map(drugDtoMapper::drugToDrugDto).toList());
   }
 
   @Operation(summary = "Add account conditions by ids")
@@ -122,12 +128,11 @@ public class AccountController {
       return ResponseEntity.badRequest().body("No such account found");
     }
 
-
     final var newAccountDrugs = account.getDrugs();
     final var res = newAccountDrugs.addAll(drugRepository.findAllById(drugs));
     account.setDrugs(newAccountDrugs);
     repository.save(account);
-    
+
     return ResponseEntity.ok(res);
   }
 
