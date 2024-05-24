@@ -14,7 +14,7 @@ public class DrugDtoMapper {
   public DrugDto drugToDrugDto(@NotNull Drug drug) {
     return switch (drug.getSource()) {
       case aurora -> auroraDrugService.getDto(drug);
-      case null -> throw new RuntimeException();
+      case null -> throw new IllegalArgumentException();
     };
   }
 }

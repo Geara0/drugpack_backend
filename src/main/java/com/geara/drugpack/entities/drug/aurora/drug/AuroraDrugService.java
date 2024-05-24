@@ -3,11 +3,10 @@ package com.geara.drugpack.entities.drug.aurora.drug;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.geara.drugpack.dto.activesubstance.ActiveSubstanceDto;
 import com.geara.drugpack.dto.drug.DrugDto;
-import com.geara.drugpack.dto.description.DescriptionDto;
 import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.aurora.activesubstance.AuroraActiveSubstanceRepository;
+import com.geara.drugpack.entities.drug.aurora.activesubstance.AuroraActiveSubstanceService;
 import com.geara.drugpack.entities.drug.aurora.description.AuroraDescriptionRepository;
 
 import java.awt.image.BufferedImage;
@@ -16,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import com.geara.drugpack.entities.drug.aurora.description.AuroraDescriptionService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +35,9 @@ public class AuroraDrugService {
   private final AuroraDrugRepository drugRepository;
   private final AuroraDescriptionRepository descriptionRepository;
   private final AuroraActiveSubstanceRepository activeSubstanceRepository;
+
+  private final AuroraDescriptionService descriptionService;
+  private final AuroraActiveSubstanceService activeSubstanceService;
 
   public void loadFromJson(String path) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -67,68 +70,17 @@ public class AuroraDrugService {
   }
 
   public @NotNull DrugDto getDto(@NotNull Drug drug) {
-    if (drug == null) throw new RuntimeException();
+    if (drug == null) throw new IllegalArgumentException();
 
     final var auroraDrug = drugRepository.findById(drug.getForeignId()).get();
     final var auroraDescription = auroraDrug.getDescription();
     final var auroraActiveSubstance = auroraDrug.getActiveSubstance();
 
     final var description =
-        auroraDescription != null
-            ? new DescriptionDto(
-                auroraDescription.getComposition(),
-                auroraDescription.getCompositionDf(),
-                auroraDescription.getCharacters(),
-                auroraDescription.getPharmaActions(),
-                auroraDescription.getActonOrg(),
-                auroraDescription.getComponentsProperties(),
-                auroraDescription.getDrugFormDescr(),
-                auroraDescription.getPharmaKinetic(),
-                auroraDescription.getPharmaDynamic(),
-                auroraDescription.getPharmaProperties(),
-                auroraDescription.getClinicalPharmacology(),
-                auroraDescription.getDirection(),
-                auroraDescription.getIndications(),
-                auroraDescription.getRecommendations(),
-                auroraDescription.getContraindications(),
-                auroraDescription.getPregnancyUse(),
-                auroraDescription.getUseMethodAndDoses(),
-                auroraDescription.getInstrForPac(),
-                auroraDescription.getSideActions(),
-                auroraDescription.getInteractions(),
-                auroraDescription.getOverdose(),
-                auroraDescription.getPrecautions(),
-                auroraDescription.getSpecialGuidelines(),
-                auroraDescription.getForm(),
-                auroraDescription.getAptekaCondition(),
-                auroraDescription.getLiterature(),
-                auroraDescription.getComment(),
-                auroraDescription.getManufacturer(),
-                auroraDescription.getApply(),
-                auroraDescription.getComplectation(),
-                auroraDescription.getPrinciple(),
-                auroraDescription.getMainTechChars(),
-                auroraDescription.getObservation(),
-                auroraDescription.getObservation(),
-                auroraDescription.getService(),
-                auroraDescription.getPharmGroups(),
-                auroraDescription.getPharmActions())
-            : null;
+        auroraDescription != null ? descriptionService.getDto(auroraDescription) : null;
 
     final var activeSubstance =
-        auroraActiveSubstance != null
-            ? new ActiveSubstanceDto(
-                auroraActiveSubstance.getAsNameRus(),
-                auroraActiveSubstance.getAsNameEng(),
-                auroraActiveSubstance.getAsNameLatGenitive(),
-                auroraActiveSubstance.getAsNameLat(),
-                auroraActiveSubstance.getTcfsDescId(),
-                auroraActiveSubstance.getFdaCat(),
-                auroraActiveSubstance.getAsFormula(),
-                auroraActiveSubstance.getAsFormulaHtml(),
-                auroraActiveSubstance.getAsCasCode(),
-                auroraActiveSubstance.getAsterisk())
-            : null;
+        auroraActiveSubstance != null ? activeSubstanceService.getDto(auroraActiveSubstance) : null;
 
     return new DrugDto(
         drug.getId(),

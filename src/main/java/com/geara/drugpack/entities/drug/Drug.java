@@ -16,7 +16,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIgnoreProperties({"new", "accounts", "source"})
+@JsonIgnoreProperties({"new", "accounts"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"source", "foreignId"}))
 @Schema(description = "Representation of drug in some db (like aurora)")
 public class Drug extends Searchable<Long> {
@@ -33,5 +33,5 @@ public class Drug extends Searchable<Long> {
 
   @Column(nullable = false)
   @Schema(description = "Source of drug (like aurora)")
-  private DrugSource source;
+  private Source source;
 }

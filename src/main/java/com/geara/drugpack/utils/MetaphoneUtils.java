@@ -5,13 +5,42 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public class MetaphoneUtils {
+  private static final String ALPHABET = "ОЕАИУЭЮЯПСТРКЛМНБВГДЖЗЙФХЦЧШЩЁЫ";
+  private static final String VOICED_CONSONANTS = "БЗДВГ";
+  private static final String VOICELESS_CONSONANTS = "ПСТФК";
+  private static final String WEAKENING_CONSONANTS = "ПСТКБВГДЖЗФХЦЧШЩ";
+  private static final String FROM_VOWELS = "ОЮЕЭЯЁЫ";
+  private static final String TO_VOWELS = "АУИИАИА";
+
   public static String generateMetaphone(@NotNull List<String> input) {
+    return generateMetaphone(String.join(" ", input), TransliterationType.sound);
+  }
+
+  public static String generateMetaphone(@NotNull String input) {
+    return generateMetaphone(input, TransliterationType.sound);
+  }
+
+  public static String generateMetaphone(@NotNull String input, @NotNull TransliterationType type) {
+    if (input == null || type == null) throw new IllegalArgumentException();
+
+    final var transliterated =
+        switch (type) {
+          case qwerty -> TransliterationUtils.qwertyReplace(input);
+          case sound -> TransliterationUtils.transliterate(input);
+        };
+
+    return generateMetaphoneFromString(transliterated);
+  }
+
+  private static String generateMetaphoneFromList(@NotNull List<String> input) {
+    if (input == null) throw new IllegalArgumentException();
+
     final var res = new StringBuilder();
     for (var i = 0; i < input.size(); i++) {
       final var word = input.get(i);
       if (word == null) continue;
 
-      final var metaphone = generateMetaphone(word).trim();
+      final var metaphone = generateMetaphoneFromString(word).trim();
       if (metaphone.isEmpty()) continue;
       res.append(metaphone);
       if (i != input.size() - 1) res.append(" ");
@@ -20,53 +49,49 @@ public class MetaphoneUtils {
     return res.toString();
   }
 
-  public static String generateMetaphone(@NotNull String input) {
-    if (input.contains(" ")) return generateMetaphone(List.of(input.split(" ")));
+  private static String generateMetaphoneFromString(@NotNull String input) {
+    if (input == null) throw new IllegalArgumentException();
 
-    final var alf = "ОЕАИУЭЮЯПСТРКЛМНБВГДЖЗЙФХЦЧШЩЁЫ";
-    final var cns1 = "БЗДВГ";
-    final var cns2 = "ПСТФК";
-    final var cns3 = "ПСТКБВГДЖЗФХЦЧШЩ";
-    final var ch = "ОЮЕЭЯЁЫ";
-    final var ct = "АУИИАИА";
-    final var W = input.toUpperCase();
+    if (input.contains(" ")) return generateMetaphoneFromList(List.of(input.split(" ")));
 
-    var S = new StringBuilder();
+    final var word = input.toUpperCase();
 
-    for (final var c : W.chars().mapToObj(e -> (char) e).toArray()) {
-      if (!alf.contains(String.valueOf(c))) continue;
-      S.append(c);
+    var compressed = new StringBuilder();
+
+    for (final var c : word.chars().mapToObj(e -> (char) e).toArray()) {
+      if (!ALPHABET.contains(String.valueOf(c))) continue;
+      compressed.append(c);
     }
 
-    if (S.isEmpty()) return "";
+    if (compressed.isEmpty()) return "";
 
-    if (S.length() > 6) {
-      final var left = S.substring(0, S.length() - 6);
+    if (compressed.length() > 6) {
+      final var left = compressed.substring(0, compressed.length() - 6);
       final var right =
-          switch (S.substring(S.length() - 6)) {
+          switch (compressed.substring(compressed.length() - 6)) {
             case "ОВСКИЙ", "ОВСКАЯ" -> "!";
             case "ЕВСКИЙ", "ЕВСКАЯ" -> "@";
-            default -> S.substring(S.length() - 6);
+            default -> compressed.substring(compressed.length() - 6);
           };
 
-      S = new StringBuilder(left + right);
+      compressed = new StringBuilder(left + right);
     }
 
-    if (S.length() > 4) {
-      final var left = S.substring(0, S.length() - 4);
+    if (compressed.length() > 4) {
+      final var left = compressed.substring(0, compressed.length() - 4);
       final var right =
-          switch (S.substring(S.length() - 4)) {
+          switch (compressed.substring(compressed.length() - 4)) {
             case "ИЕВА", "ЕЕВА" -> "9";
-            default -> S.substring(S.length() - 4);
+            default -> compressed.substring(compressed.length() - 4);
           };
 
-      S = new StringBuilder(left + right);
+      compressed = new StringBuilder(left + right);
     }
 
-    if (S.length() > 3) {
-      final var left = S.substring(0, S.length() - 3);
+    if (compressed.length() > 3) {
+      final var left = compressed.substring(0, compressed.length() - 3);
       final var right =
-          switch (S.substring(S.length() - 3)) {
+          switch (compressed.substring(compressed.length() - 3)) {
             case "ОВА", "ЕВА" -> "9";
             case "ИНА" -> "1";
             case "ИЕВ", "ЕЕВ" -> "4";
@@ -76,16 +101,16 @@ public class MetaphoneUtils {
             case "АЛА", "ЯЛА", "АЛИ", "ЯЛИ", "УЛА", "УЛИ" -> "%";
             case "ОЛА", "ЕЛА", "ОЛИ", "ЕЛИ" -> "^";
 
-            default -> S.substring(S.length() - 3);
+            default -> compressed.substring(compressed.length() - 3);
           };
 
-      S = new StringBuilder(left + right);
+      compressed = new StringBuilder(left + right);
     }
 
-    if (S.length() > 2) {
-      final var left = S.substring(0, S.length() - 2);
+    if (compressed.length() > 2) {
+      final var left = compressed.substring(0, compressed.length() - 2);
       final var right =
-          switch (S.substring(S.length() - 2)) {
+          switch (compressed.substring(compressed.length() - 2)) {
             case "ОВ", "ЕВ", "ОЕ", "ЕЕ", "ОЙ" -> "4";
             case "АЯ", "ЯЯ" -> "6";
             case "ИЙ", "ЫЙ", "ИЯ" -> "7";
@@ -97,221 +122,57 @@ public class MetaphoneUtils {
             case "УТ", "ЮТ", "АТ", "ЯТ", "УЛ", "ЮЛ", "АЛ", "ЯЛ" -> "%";
             case "ОЛ", "ЕЛ" -> "^";
 
-            default -> S.substring(S.length() - 2);
+            default -> compressed.substring(compressed.length() - 2);
           };
 
-      S = new StringBuilder(left + right);
+      compressed = new StringBuilder(left + right);
     }
 
-    int B = cns1.indexOf(S.charAt(S.length() - 1)) + 1;
-    if (B > 0) {
-      S = new StringBuilder(S.substring(0, S.length() - 1) + cns2.charAt(B - 1));
+    int B = VOICED_CONSONANTS.indexOf(compressed.charAt(compressed.length() - 1));
+    if (B > -1) {
+      compressed =
+          new StringBuilder(
+              compressed.substring(0, compressed.length() - 1) + VOICELESS_CONSONANTS.charAt(B));
     }
 
-    String old_c = " ";
-    StringBuilder V = new StringBuilder();
-    int i = 1;
-    while (i <= S.length()) {
-      String c = S.substring(i - 1, i);
-      B = ch.indexOf(c) + 1;
-      if (B > 0) {
-        if (old_c.equals("Й") || old_c.equals("И")) {
-          if (c.equals("О") || c.equals("Е")) {
-            old_c = "И";
-            S = new StringBuilder(S.substring(0, S.length() - 1) + old_c);
-          } else {
-            if (!c.equals(old_c)) {
-              V.append(ct.charAt(B - 1));
-            }
-          }
-        } else {
-          if (!c.equals(old_c)) {
-            V.append(ct.charAt(B - 1));
-          }
+    String prev = " ";
+    StringBuilder res = new StringBuilder();
+    for (int i = 0; i < compressed.length(); i++) {
+      final var curr = String.valueOf(compressed.charAt(i));
+
+      var prevFromIndex = FROM_VOWELS.indexOf(curr);
+      if (prevFromIndex > -1) {
+        // if curr is vowel
+        if (prev.equals("Й") && (curr.equals("О") || curr.equals("Е"))) {
+          // ЙО/ЙЕ -> ИО/ИЕ
+          prev = "И";
+          compressed.setLength(compressed.length() - 1);
+          compressed.append(prev);
+        } else if (!curr.equals(prev)) {
+          // if curr != prev -> append to res
+          res.append(TO_VOWELS.charAt(prevFromIndex));
         }
       } else {
-        if (!c.equals(old_c) && cns3.indexOf(c) > 0) {
-          B = cns1.indexOf(old_c) + 1;
-          if (B > 0) {
-            old_c = cns2.substring(B - 1, B);
-            V = new StringBuilder(V.substring(0, V.length() - 1) + old_c);
+        // if curr is consonant
+        if (!curr.equals(prev) && WEAKENING_CONSONANTS.contains(curr)) {
+          // if curr is weakening && prev is voiced -> make prev voiceless
+          prevFromIndex = VOICED_CONSONANTS.indexOf(prev);
+          if (prevFromIndex > -1) {
+            prev = String.valueOf(VOICELESS_CONSONANTS.charAt(prevFromIndex));
+            res.setLength(res.length() - 1);
+            res.append(prev);
           }
         }
-        if (!c.equals(old_c)) {
-          V.append(c);
+
+        // if curr != prev - add to res
+        if (!curr.equals(prev)) {
+          res.append(curr);
         }
       }
-      old_c = c;
-      i++;
+
+      prev = curr;
     }
 
-    return V.toString();
-  }
-
-  // https://moluch.ru/archive/19/1967/
-  public static String getSqlMetaphone() {
-    return "CREATE OR REPLACE FUNCTION rumetaphone(W text) "
-        + "RETURNS text "
-        + "LANGUAGE plpgsql "
-        + "AS $$ "
-        + "DECLARE "
-        + "  alf text; "
-        + "  cns1 text; "
-        + "  cns2 text; "
-        + "  cns3 text; "
-        + "  ch text; "
-        + "  ct text; "
-        + "  S text; "
-        + "  V text; "
-        + "  i int; "
-        + "  B int; "
-        + "  c char(1); "
-        + "  old_c char(1); "
-        + "BEGIN "
-        + "  alf := 'ОЕАИУЭЮЯПСТРКЛМНБВГДЖЗЙФХЦЧШЩЁЫ'; "
-        + "  cns1 := 'БЗДВГ'; "
-        + "  cns2 := 'ПСТФК'; "
-        + "  cns3 := 'ПСТКБВГДЖЗФХЦЧШЩ'; "
-        + "  ch := 'ОЮЕЭЯЁЫ'; "
-        + "  ct := 'АУИИАИА'; "
-        + "  W := UPPER(W); "
-        + "  S := ''; "
-        + "  V := ''; "
-        + "  i := 1; "
-        + "  WHILE i <= LENGTH(W) LOOP "
-        + "    c := SUBSTRING(W, i, 1); "
-        + "    IF POSITION(c IN alf) > 0 THEN "
-        + "      S := S || c; "
-        + "    END IF; "
-        + "    i := i + 1; "
-        + "  END LOOP; "
-        + "  "
-        + "  IF LENGTH(S) = 0 THEN "
-        + "    RETURN ''; "
-        + "  END IF; "
-        + "  IF LENGTH(S) > 6 THEN "
-        + "    S := LEFT(S, LENGTH(S) - 6) || "
-        + "         CASE RIGHT(S, 6) "
-        + "           WHEN 'ОВСКИЙ' THEN '!' "
-        + "           WHEN 'ОВСКАЯ' THEN '!' "
-        + "           WHEN 'ЕВСКИЙ' THEN '@' "
-        + "           WHEN 'ЕВСКАЯ' THEN '@' "
-        + "           ELSE RIGHT(S, 6) "
-        + "         END; "
-        + "  END IF; "
-        + "  IF LENGTH(S) > 4 THEN "
-        + "    S := LEFT(S, LENGTH(S) - 4) || "
-        + "         CASE RIGHT(S, 4) "
-        + "           WHEN 'ИЕВА' THEN '9' "
-        + "           WHEN 'ЕЕВА' THEN '9' "
-        + "           ELSE RIGHT(S, 4) "
-        + "         END; "
-        + "  END IF; "
-        + "  IF LENGTH(S) > 3 THEN "
-        + "    S := LEFT(S, LENGTH(S) - 3) || "
-        + "         CASE RIGHT(S, 3) "
-        + "           WHEN 'ОВА' THEN '9' "
-        + "           WHEN 'ЕВА' THEN '9' "
-        + "           WHEN 'ИНА' THEN '1' "
-        + "           WHEN 'ИЕВ' THEN '4' "
-        + "           WHEN 'ЕЕВ' THEN '4' "
-        + "           WHEN 'НКО' THEN '3' "
-        + "           WHEN 'АТЬ' THEN '#' "
-        + "           WHEN 'ЯТЬ' THEN '#' "
-        + "           WHEN 'ОТЬ' THEN '#' "
-        + "           WHEN 'ЕТЬ' THEN '#' "
-        + "           WHEN 'УТЬ' THEN '#' "
-        + "           WHEN 'ЕШЬ' THEN '$' "
-        + "           WHEN 'ИШЬ' THEN '$' "
-        + "           WHEN 'ЕТЕ' THEN '$' "
-        + "           WHEN 'ИТЕ' THEN '$' "
-        + "           WHEN 'АЛА' THEN '%' "
-        + "           WHEN 'ЯЛА' THEN '%' "
-        + "           WHEN 'АЛИ' THEN '%' "
-        + "           WHEN 'ЯЛИ' THEN '%' "
-        + "           WHEN 'УЛА' THEN '%' "
-        + "           WHEN 'УЛИ' THEN '%' "
-        + "           WHEN 'ОЛА' THEN '^' "
-        + "           WHEN 'ЕЛА' THEN '^' "
-        + "           WHEN 'ОЛИ' THEN '^' "
-        + "           WHEN 'ЕЛИ' THEN '^' "
-        + "           ELSE RIGHT(S, 3) "
-        + "         END; "
-        + "  END IF; "
-        + "  IF LENGTH(S) > 2 THEN "
-        + "    S := LEFT(S, LENGTH(S) - 2) || "
-        + "         CASE RIGHT(S, 2) "
-        + "          WHEN 'АЯ' THEN '6' "
-        + "          WHEN 'ЯЯ' THEN '6' "
-        + "          WHEN 'ИЙ' THEN '7' "
-        + "          WHEN 'ЫЙ' THEN '7' "
-        + "          WHEN 'ИЯ' THEN '7' "
-        + "          WHEN 'ЫХ' THEN '5' "
-        + "          WHEN 'ИХ' THEN '5' "
-        + "          WHEN 'ИН' THEN '8' "
-        + "          WHEN 'ИК' THEN '2' "
-        + "          WHEN 'ЕК' THEN '2' "
-        + "          WHEN 'УК' THEN '0' "
-        + "          WHEN 'ЮК' THEN '0' "
-        + "          WHEN 'ЕМ' THEN '$' "
-        + "          WHEN 'ИМ' THEN '$' "
-        + "          WHEN 'ЕТ' THEN '$' "
-        + "          WHEN 'ИТ' THEN '$' "
-        + "          WHEN 'УТ' THEN '%' "
-        + "          WHEN 'ЮТ' THEN '%' "
-        + "          WHEN 'АТ' THEN '%' "
-        + "          WHEN 'ЯТ' THEN '%' "
-        + "          WHEN 'УЛ' THEN '%' "
-        + "          WHEN 'ЮЛ' THEN '%' "
-        + "          WHEN 'АЛ' THEN '%' "
-        + "          WHEN 'ЯЛ' THEN '%' "
-        + "          WHEN 'ОЛ' THEN '^' "
-        + "          WHEN 'ЕЛ' THEN '^' "
-        + "          ELSE RIGHT(S, 2) "
-        + "         END; "
-        + "  END IF; "
-        + "  B := POSITION(RIGHT(S, 1) IN cns1); "
-        + "  IF B > 0 THEN "
-        + "    S := LEFT(S, LENGTH(S) - 1) || SUBSTRING(cns2 FROM B FOR 1); "
-        + "  END IF; "
-        + "  old_c := ' '; "
-        + "  i := 1; "
-        + "  WHILE i <= LENGTH(S) LOOP "
-        + "    c := SUBSTRING(S, i, 1); "
-        + "    B := POSITION(c IN ch); "
-        + "    IF B > 0 THEN "
-        + "      IF old_c = 'Й' OR old_c = 'И' THEN "
-        + "        IF c = 'О' OR c = 'Е' THEN "
-        + "          old_c := 'И'; "
-        + "          S := LEFT(S, LENGTH(S) - 1) || old_c; "
-        + "        ELSE "
-        + "          IF c <> old_c THEN "
-        + "            V := V || SUBSTRING(ct FROM B FOR 1); "
-        + "          END IF; "
-        + "        END IF; "
-        + "      ELSE "
-        + "        IF c <> old_c THEN "
-        + "          V := V || SUBSTRING(ct FROM B FOR 1); "
-        + "        END IF; "
-        + "      END IF; "
-        + "    ELSE "
-        + "      IF c <> old_c AND POSITION(c IN cns3) > 0 THEN "
-        + "        B := POSITION(old_c IN cns1); "
-        + "        IF B > 0 THEN "
-        + "          old_c := SUBSTRING(cns2 FROM B FOR 1); "
-        + "          V := LEFT(V, LENGTH(V) - 1) || old_c; "
-        + "        END IF; "
-        + "      END IF; "
-        + "      IF c <> old_c THEN "
-        + "        V := V || c; "
-        + "      END IF; "
-        + "    END IF; "
-        + "    old_c := c; "
-        + "    i := i + 1; "
-        + "  END LOOP; "
-        + "  "
-        + "  RETURN V; "
-        + "END; "
-        + "$$; ";
+    return res.toString();
   }
 }

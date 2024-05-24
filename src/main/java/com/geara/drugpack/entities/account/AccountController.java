@@ -143,7 +143,7 @@ public class AccountController {
   @PostMapping("removeConditions")
   public ResponseEntity<Object> removeConditions(
       Principal principal, @RequestBody final Set<Long> conditions) {
-    if (conditions.size() == 0) {
+    if (conditions == null || conditions.isEmpty()) {
       return ResponseEntity.badRequest().body("Conditions cannot be an empty field");
     }
 
@@ -173,7 +173,7 @@ public class AccountController {
   @PostMapping("removeDrugs")
   public ResponseEntity<Object> removeDrugs(
       Principal principal, @RequestBody final Set<Long> drugs) {
-    if (drugs == null || drugs.size() == 0) {
+    if (drugs == null || drugs.isEmpty()) {
       return ResponseEntity.badRequest().body("Drugs cannot be an empty field");
     }
 

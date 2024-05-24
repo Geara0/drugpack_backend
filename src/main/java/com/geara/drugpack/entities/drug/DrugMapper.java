@@ -1,6 +1,5 @@
-package com.geara.drugpack.entities.drug.mappers;
+package com.geara.drugpack.entities.drug;
 
-import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.aurora.drug.AuroraDrug;
 import com.geara.drugpack.utils.MetaphoneUtils;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +10,7 @@ import org.mapstruct.Named;
 import java.util.Arrays;
 
 @Mapper(componentModel = "spring")
-public interface AuroraDrugMapper {
+public interface DrugMapper {
   @Mapping(target = "foreignId", source = "packingId")
   @Mapping(target = "source", constant = "aurora")
   @Mapping(target = "accounts", ignore = true)

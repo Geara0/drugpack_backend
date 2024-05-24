@@ -1,10 +1,11 @@
 package com.geara.drugpack.configs;
 
+import com.geara.drugpack.entities.condition.ConditionService;
+import com.geara.drugpack.entities.condition.aurora.condition.AuroraConditionService;
 import com.geara.drugpack.entities.drug.DrugService;
 import com.geara.drugpack.entities.drug.aurora.activesubstance.AuroraActiveSubstanceService;
 import com.geara.drugpack.entities.drug.aurora.description.AuroraDescriptionService;
 import com.geara.drugpack.entities.drug.aurora.drug.AuroraDrugService;
-import com.geara.drugpack.utils.MetaphoneUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import java.sql.Connection;
@@ -24,7 +25,9 @@ public class DatabaseInitializer {
   private final AuroraDrugService auroraDrugService;
   private final AuroraActiveSubstanceService auroraActiveSubstanceService;
   private final AuroraDescriptionService auroraDescriptionService;
+  private final AuroraConditionService auroraConditionService;
   private final DrugService drugService;
+  private final ConditionService conditionService;
 
   @Value("${sources.aurora}")
   private String auroraPath;
@@ -33,19 +36,20 @@ public class DatabaseInitializer {
   @Transactional
   public void initialize() {
     try (Connection connection = dataSource.getConnection()) {
-      String sql =
-          // add fuzzystrmatch to db
-          "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch; "
-              +
-              // init metaphone function
-              MetaphoneUtils.getSqlMetaphone();
+      // add fuzzystrmatch to db
+      String sql = "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch; ";
 
+      // load aurora drugs
       auroraActiveSubstanceService.loadFromJson(
           auroraPath + "aurora_dict_active_substances_20240508.json");
       auroraDescriptionService.loadFromJson(auroraPath + "aurora_lib_desc_20240501.json");
       auroraDrugService.loadFromJson(auroraPath + "aurora_inventory_brief_20240501.json");
 
+      // load aurora conditions
+      auroraConditionService.loadFromJson(auroraPath + "aurora_classes_mkb_synon_20240523.json");
+
       drugService.update();
+      conditionService.update();
 
       try (Statement statement = connection.createStatement()) {
         statement.execute(sql);

@@ -8,6 +8,7 @@ import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.DrugRepository;
 import com.geara.drugpack.utils.MetaphoneUtils;
 import com.geara.drugpack.utils.Searchable;
+import com.geara.drugpack.utils.TransliterationType;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -65,9 +66,8 @@ public class SearchController {
             + "ORDER BY importance desc ";
 
     final Query query = entityManager.createQuery(select);
-    query.setParameter("searchTerm", MetaphoneUtils.generateMetaphone(searchTerm));
+    query.setParameter("searchTerm", MetaphoneUtils.generateMetaphone(searchTerm, TransliterationType.qwerty));
     query.setMaxResults(50);
-    System.out.println("Search for" + MetaphoneUtils.generateMetaphone(searchTerm));
 
     final List<Object[]> queryResult = query.getResultList();
 

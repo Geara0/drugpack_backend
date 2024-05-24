@@ -1,7 +1,6 @@
 package com.geara.drugpack.entities.drug;
 
 import com.geara.drugpack.entities.drug.aurora.drug.AuroraDrugRepository;
-import com.geara.drugpack.entities.drug.mappers.AuroraDrugMapper;
 import com.geara.drugpack.utils.MetaphoneUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import java.util.Arrays;
 public class DrugService {
   private final DrugRepository drugRepository;
   private final AuroraDrugRepository auroraDrugRepository;
-  private final AuroraDrugMapper auroraDrugMapper;
+  private final DrugMapper drugMapper;
 
   public void update() {
     final var auroraDrugs = auroraDrugRepository.findAll();
@@ -22,9 +21,9 @@ public class DrugService {
 
     for (final var auroraDrug : auroraDrugs) {
       final var drug =
-          drugRepository.findBySourceAndForeignId(DrugSource.aurora, auroraDrug.getPackingId());
+          drugRepository.findBySourceAndForeignId(Source.aurora, auroraDrug.getPackingId());
       if (drug.isEmpty()) {
-        newDrugs.add(auroraDrugMapper.auroraToDrug(auroraDrug));
+        newDrugs.add(drugMapper.auroraToDrug(auroraDrug));
         continue;
       }
 
