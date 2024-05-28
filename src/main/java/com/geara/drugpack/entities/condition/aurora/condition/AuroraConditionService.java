@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import com.geara.drugpack.dto.condition.ConditionDto;
+import com.geara.drugpack.entities.condition.Condition;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,5 +33,13 @@ public class AuroraConditionService {
                     .constructCollectionType(List.class, AuroraCondition.class));
 
     repository.saveAll(conditions);
+  }
+
+  public @NotNull ConditionDto getDto(@NotNull Condition condition) {
+    if (condition == null) throw new IllegalArgumentException();
+
+    final var auroraCondition = repository.findById(condition.getForeignId()).get();
+
+    return new ConditionDto(auroraCondition.getId(), auroraCondition.getSynonymName());
   }
 }

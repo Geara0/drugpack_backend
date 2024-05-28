@@ -1,17 +1,28 @@
 package com.geara.drugpack.entities.account;
 
-import com.geara.drugpack.entities.condition.Condition;
+import com.geara.drugpack.dto.compatibility.CompatibilityDtoMapper;
+import com.geara.drugpack.dto.condition.ConditionDto;
+import com.geara.drugpack.dto.condition.ConditionDtoMapper;
+import com.geara.drugpack.dto.drug.DrugDto;
+import com.geara.drugpack.dto.drug.DrugDtoMapper;
 import com.geara.drugpack.entities.condition.ConditionRepository;
 import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.DrugRepository;
+import com.geara.drugpack.entities.drug.Source;
+import com.geara.drugpack.entities.drug.aurora.compatibility.AuroraCompatibilityService;
+import com.geara.drugpack.responses.GetAccountResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.security.Principal;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -30,6 +41,15 @@ public class AccountController {
   private final AccountRepository repository;
   private final DrugRepository drugRepository;
   private final ConditionRepository conditionRepository;
+  private final DrugDtoMapper drugDtoMapper;
+  private final ConditionDtoMapper conditionDtoMapper;
+  private final AuroraCompatibilityService auroraCompatibilityService;
+  private final CompatibilityDtoMapper compatibilityDtoMapper;
+
+  private void updateCompatibility(Account account) {
+    final var grouped = account.getDrugs().stream().collect(Collectors.groupingBy(Drug::getSource));
+    auroraCompatibilityService.updateForAccount(account, grouped.get(Source.aurora));
+  }
 
   public Account newAccount(String email, String password) {
     final var account = new Account(email, password);
@@ -37,11 +57,44 @@ public class AccountController {
     return account;
   }
 
+  @Operation(summary = "Get all account info")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Returns conditions",
+      content = @Content(schema = @Schema(implementation = GetAccountResponse.class)))
+  @ApiResponse(
+      responseCode = "400",
+      description = "Returns error message",
+      content = @Content(schema = @Schema(implementation = String.class)))
+  @PostMapping("get")
+  public ResponseEntity<Object> get(Principal principal) {
+    final var account = repository.findByEmail(principal.getName());
+
+    if (account == null) {
+      return ResponseEntity.badRequest().body("No such account found");
+    }
+
+    final var conditions =
+        account.getConditions().stream().map(conditionDtoMapper::conditionToConditionDto).toList();
+    final var drugs = account.getDrugs().stream().map(drugDtoMapper::drugToDrugDto).toList();
+    final var compatibilities =
+        account.getCompatibility().entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    e ->
+                        compatibilityDtoMapper.compatibilityDataToCompatibility(
+                            e.getKey(), e.getValue())));
+
+    return ResponseEntity.ok(new GetAccountResponse(conditions, drugs, compatibilities));
+  }
+
   @Operation(summary = "Get account conditions")
   @ApiResponse(
       responseCode = "200",
       description = "Returns conditions",
-      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Condition.class))))
+      content =
+          @Content(array = @ArraySchema(schema = @Schema(implementation = ConditionDto.class))))
   @ApiResponse(
       responseCode = "400",
       description = "Returns error message",
@@ -54,14 +107,15 @@ public class AccountController {
       return ResponseEntity.badRequest().body("No such account found");
     }
 
-    return ResponseEntity.ok(account.getConditions().toArray());
+    return ResponseEntity.ok(
+        account.getConditions().stream().map(conditionDtoMapper::conditionToConditionDto).toList());
   }
 
   @Operation(summary = "Get account drugs")
   @ApiResponse(
       responseCode = "200",
       description = "Returns drugs",
-      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Drug.class))))
+      content = @Content(array = @ArraySchema(schema = @Schema(implementation = DrugDto.class))))
   @ApiResponse(
       responseCode = "400",
       description = "Returns error message",
@@ -74,7 +128,8 @@ public class AccountController {
       return ResponseEntity.badRequest().body("No such account found");
     }
 
-    return ResponseEntity.ok(account.getDrugs());
+    return ResponseEntity.ok(
+        account.getDrugs().stream().map(drugDtoMapper::drugToDrugDto).toList());
   }
 
   @Operation(summary = "Add account conditions by ids")
@@ -122,12 +177,12 @@ public class AccountController {
       return ResponseEntity.badRequest().body("No such account found");
     }
 
-
     final var newAccountDrugs = account.getDrugs();
     final var res = newAccountDrugs.addAll(drugRepository.findAllById(drugs));
     account.setDrugs(newAccountDrugs);
     repository.save(account);
-    
+    updateCompatibility(account);
+
     return ResponseEntity.ok(res);
   }
 
@@ -187,6 +242,7 @@ public class AccountController {
     final var res = newAccountDrugs.removeIf(e -> drugs.contains(e.getId()));
     account.setDrugs(newAccountDrugs);
     repository.save(account);
+    updateCompatibility(account);
 
     return ResponseEntity.ok(res);
   }
