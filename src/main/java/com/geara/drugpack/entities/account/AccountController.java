@@ -1,15 +1,12 @@
 package com.geara.drugpack.entities.account;
 
+import com.geara.drugpack.entities.condition.ConditionRepository;
 import com.geara.drugpack.dto.compatibility.CompatibilityDtoMapper;
 import com.geara.drugpack.dto.condition.ConditionDto;
 import com.geara.drugpack.dto.condition.ConditionDtoMapper;
 import com.geara.drugpack.dto.drug.DrugDto;
 import com.geara.drugpack.dto.drug.DrugDtoMapper;
-import com.geara.drugpack.entities.condition.ConditionRepository;
-import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.DrugRepository;
-import com.geara.drugpack.entities.drug.Source;
-import com.geara.drugpack.entities.drug.aurora.compatibility.AuroraCompatibilityService;
 import com.geara.drugpack.responses.GetAccountResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
