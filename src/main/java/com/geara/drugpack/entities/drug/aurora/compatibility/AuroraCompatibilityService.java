@@ -41,6 +41,8 @@ public class AuroraCompatibilityService {
   private String auroraInteractLogin;
 
   public void updateForAccount(Account account, List<Drug> drugs) {
+    if (drugs == null) return;
+
     final var auroraDrugs =
         drugRepository.findAllById(drugs.stream().map(Drug::getForeignId).toList());
 
