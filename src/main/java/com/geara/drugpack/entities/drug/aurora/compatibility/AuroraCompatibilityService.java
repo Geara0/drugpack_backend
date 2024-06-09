@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.geara.drugpack.dto.compatibility.CompatibilityDto;
 import com.geara.drugpack.entities.account.Account;
+import com.geara.drugpack.entities.account.AccountRepository;
+import com.geara.drugpack.entities.account.CompatibilityData;
 import com.geara.drugpack.entities.drug.Drug;
 import com.geara.drugpack.entities.drug.Source;
 import com.geara.drugpack.entities.drug.aurora.drug.AuroraDrugRepository;
@@ -22,8 +24,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +34,7 @@ public class AuroraCompatibilityService {
 
   private final AuroraDrugRepository drugRepository;
   private final AuroraCompatibilityRepository interactionRepository;
+  private final AccountRepository accountRepository;
 
   @Value("${aurora.interact.password}")
   private String auroraInteractPassword;
@@ -89,11 +91,17 @@ public class AuroraCompatibilityService {
       interactionRepository.saveAll(interactions);
 
       final var fullCompatibility = account.getCompatibility();
-      final var compatibility = fullCompatibility.get(Source.aurora);
+      var compatibility = fullCompatibility.get(Source.aurora);
+
+      if (compatibility == null) {
+        compatibility = new CompatibilityData();
+        compatibility.ids = new HashSet<>();
+      }
+
       compatibility.ids.addAll(interactions.stream().map(AuroraCompatibility::getId).toList());
       fullCompatibility.put(Source.aurora, compatibility);
       account.setCompatibility(fullCompatibility);
-
+      accountRepository.save(account);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
